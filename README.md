@@ -17,11 +17,6 @@ dpll clauses symbols model
 ```
 Is this some kind of pattern matching?
 
-:= and a value
-
-```Haskell
-:= False
-```
 
 Between two expressions
 ```Haskell

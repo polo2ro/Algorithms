@@ -1,16 +1,16 @@
 import Debug.Trace
 
 -- Get the list of LetterDict associated to letter
-findKey :: (Eq k) => k -> LetterDict -> Maybe [LetterDict]
-findKey key = foldr (\(k,v) acc -> if key == k then Just v else acc) Nothing
+findKey :: (Eq k) => k -> [Maybe LetterDict] -> Maybe [LetterDict]
+findKey key [] = Nothing
+findKey key xs = foldr (\(k,v) acc -> if key == k then Just v else acc) Nothing xs
 
 -- The LetterDict data type contain on level of trie
--- dict 1 ex: ("a", [])
--- dict 1 and dict2 ex: ("a", [("b", [])])
-data LetterDict = LetterDict Char [LetterDict] deriving (Show)
+-- LetterDict a (LetterDict b (LetterDict c Nothing))
+data LetterDict = LetterDict Char [Maybe LetterDict] deriving (Show)
 
 -- Argument for drillDict
-data LevelArg = LevelArg { word :: String, dict :: [LetterDict], position :: Int } deriving (Show)
+data LevelArg = LevelArg { word :: String, dict :: [Maybe LetterDict], position :: Int } deriving (Show)
 
 
 -- Create new LevelArg for the next position in word
@@ -33,7 +33,7 @@ drillDict level =
 buildTrie :: [String] -> [(Char, String)]
 buildTrie words =
     let dict = [] -- This is a list of LetterDict
-    in map drillDict [(w, dict, 0) | w <- words]
+    in map drillDict [LevelArg w dict 0 | w <- words]
 
 isWordInTrie word = word
 
