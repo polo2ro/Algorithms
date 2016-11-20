@@ -1,13 +1,24 @@
 import Debug.Trace
 
--- Get the list of LetterDict associated to letter
-findKey :: (Eq k) => k -> [Maybe LetterDict] -> Maybe [LetterDict]
-findKey key [] = Nothing
-findKey key xs = foldr (\(k,v) acc -> if key == k then Just v else acc) Nothing xs
 
 -- The LetterDict data type contain on level of trie
 -- LetterDict a (LetterDict b (LetterDict c Nothing))
-data LetterDict = LetterDict Char [Maybe LetterDict] deriving (Show)
+data LetterDict = LetterDict { letter :: Char, dictlist :: [LetterDict] } deriving (Show)
+
+
+-- Get the list of LetterDict associated to letter
+findKey :: (Eq k) => k -> [LetterDict] -> Maybe [LetterDict]
+findKey key [] = Nothing
+findKey key xs = foldr (\letterDict
+                    -> if key == letter letterDict then
+                        Just (dictlist letterDict)
+                    else
+                        letterDict)
+                    Nothing xs
+
+
+
+{-|
 
 -- Argument for drillDict
 data LevelArg = LevelArg { word :: String, dict :: [Maybe LetterDict], position :: Int } deriving (Show)
@@ -39,6 +50,22 @@ isWordInTrie word = word
 
 testlist = ["hello", "hey", "what", "when", "why"]
 
+-}
+
+testtrie = [
+        LetterDict 'a' [
+            LetterDict 'p' [
+                LetterDict 'p' [
+                    LetterDict 'l' [
+                        LetterDict 'e' []
+                    ]
+                ]
+            ]
+        ]
+    ]
+
 main = do
-    let trie = buildTrie testlist
-    print trie
+    --let trie = buildTrie testlist
+    --print trie
+    print testtrie
+    print (findKey 'a' testtrie)
