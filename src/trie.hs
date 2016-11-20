@@ -1,3 +1,5 @@
+import Data.Maybe
+
 -- The LetterDict data type contain on level of trie
 -- LetterDict a (LetterDict b (LetterDict c Nothing))
 data LetterDict = LetterDict { letter :: Char, dictlist :: [LetterDict] } deriving (Show)
@@ -22,19 +24,27 @@ nextlevel level =
     LevelArg (word level) (leveldl level) (position level +1)
 
 
+{-|
+appendDict :: LetterDict -> Maybe [LetterDict] -> [LetterDict] -> [LetterDict]
+appendDict new letterList levelList =
+    if isNothing letterList
+        then LetterDict letter [new] : levelList
+        else new : letterList
+-}
 
 -- Add letter and recursive dicts to dict
 drillDict :: LevelArg -> [LetterDict]
 drillDict level =
     let letter = word level !! position level
         leveldlLocal = leveldl level
-        letterDictList = findKey letter leveldlLocal
-        insert = LetterDict letter (drillDict $ nextlevel level)
+        letterList = findKey letter leveldlLocal
+        new = LetterDict letter leveldlLocal
+        nextList = drillDict $ nextlevel level
     in
-        if Nothing == letterDictList
-            then insert : leveldl level     -- insert a LetterDict in the list of this level
-            else letterDictList             -- insert a LetterDict for the found letter
-
+        if isNothing letterList
+            then LetterDict letter [new] : leveldlLocal
+            else new : letterList
+        [new]
 {-|
 
 
