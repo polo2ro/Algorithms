@@ -1,7 +1,6 @@
 import Data.Maybe
 
 -- The LetterDict data type contain on level of trie
--- LetterDict a (LetterDict b (LetterDict c Nothing))
 data LetterDict = LetterDict { letter :: Char, dictlist :: [LetterDict] } deriving (Show)
 
 
@@ -32,15 +31,17 @@ drillDict :: LevelArg -> [LetterDict]
 drillDict level =
     let letter = word level !! position level
         leveldlLocal = leveldl level
-        letterList = findKey letter leveldlLocal
+        letterList = if position level+1 >= length (word level)
+                    then Nothing
+                    else findKey letter leveldlLocal
         new = LetterDict letter leveldlLocal
-        nextList = drillDict $ nextlevel level
-    in
-        case letterList of
+        res = case letterList of
             Just letterList -> new : letterList
             Nothing -> LetterDict letter [new] : leveldlLocal
-
-
+    in
+        case letterList of
+            Just letterList -> drillDict $ nextlevel level
+            Nothing -> leveldlLocal
 
 
 
@@ -48,10 +49,8 @@ drillDict level =
 
 buildTrie :: [String] -> [LetterDict]
 buildTrie words =
-    let dict = [] -- This is a list of LetterDict
-        args = [LevelArg w dict 0 | w <- words]
-    in
-        map drillDict args
+    let args = [LevelArg w [] 0 | w <- words]
+    in head (map drillDict args)
 
 
 
@@ -76,6 +75,6 @@ testtrie = [
 
 main = do
     let trie = buildTrie testlist
-    print trie
-    --print (drillDict (LevelArg "apple" [] 0))
-    --print (findKey 'a' testtrie)
+    --print trie
+    print (drillDict (LevelArg "apple" [] 0))
+    --print (findKey 'b' testtrie)
