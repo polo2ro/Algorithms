@@ -15,7 +15,10 @@ dpll clauses symbols model
   | any (`isFalseIn` model) clauses = Nothing
   | otherwise =
 ```
-Is this some kind of pattern matching?
+
+solution:
+
+https://en.wikibooks.org/wiki/Haskell/Control_structures
 
 
 Between two expressions
