@@ -18,30 +18,29 @@ data LevelArg = LevelArg { word :: String, leveldl :: [LetterDict], position :: 
 
 
 -- Create new LevelArg for the next position in word
-nextlevel :: LevelArg -> LevelArg
+nextlevel :: LevelArg -> Maybe LevelArg
 nextlevel level =
-    LevelArg (word level) (leveldl level) (position level +1)
+    if position level+1 < length (word level)
+        then Just (LevelArg (word level) (leveldl level) (position level +1))
+        else Nothing
 
 
 
 
 
 -- Add letter and recursive dicts to dict
-drillDict :: LevelArg -> [LetterDict]
-drillDict level =
+drillDict :: Maybe LevelArg -> [LetterDict]
+drillDict Nothing = []
+drillDict (Just level) =
     let letter = word level !! position level
+        new = LetterDict letter (drillDict $ nextlevel level)
         leveldlLocal = leveldl level
-        letterList = if position level+1 >= length (word level)
-                    then Nothing
-                    else findKey letter leveldlLocal
-        new = LetterDict letter leveldlLocal
+        letterList = findKey letter leveldlLocal
         res = case letterList of
             Just letterList -> new : letterList
             Nothing -> LetterDict letter [new] : leveldlLocal
     in
-        case letterList of
-            Just letterList -> drillDict $ nextlevel level
-            Nothing -> leveldlLocal
+        [new]
 
 
 
@@ -49,7 +48,7 @@ drillDict level =
 
 buildTrie :: [String] -> [LetterDict]
 buildTrie words =
-    let args = [LevelArg w [] 0 | w <- words]
+    let args = [Just (LevelArg w [] 0) | w <- words]
     in head (map drillDict args)
 
 
@@ -76,5 +75,5 @@ testtrie = [
 main = do
     let trie = buildTrie testlist
     --print trie
-    print (drillDict (LevelArg "apple" [] 0))
+    print (drillDict (Just (LevelArg "apple" [] 0)))
     --print (findKey 'b' testtrie)
