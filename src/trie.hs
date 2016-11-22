@@ -1,4 +1,6 @@
 import Data.Maybe
+import Data.Foldable
+import Control.Monad.Trans.RWS.Lazy
 
 -- The LetterDict data type contain on level of trie
 data LetterDict = LetterDict { letter :: Char, dictlist :: [LetterDict] } deriving (Show)
@@ -29,32 +31,31 @@ nextlevel level =
 
 
 -- Add letter and recursive dicts to dict
-drillDict :: Maybe LevelArg -> [LetterDict]
+drillDict :: Maybe LevelArg -> [LetterDict]         -- ab, [LetterDict {letter = 'a', dictlist = [LetterDict {letter = 'c', dictlist = []}]}], 0
 drillDict Nothing = []
 drillDict (Just level) =
-    let letter = word level !! position level
-        new = LetterDict letter (drillDict $ nextlevel level)
-        leveldlLocal = leveldl level
-        letterList = findKey letter leveldlLocal
+    let ll = word level !! position level           -- a
+        newlist = drillDict $ nextlevel level       -- [LetterDict {letter = 'b', dictlist = []}]
+        leveldlLocal = leveldl level                -- [LetterDict {letter = 'a', dictlist = [LetterDict {letter = 'b', dictlist = []}]}]
+        letterList = findKey ll leveldlLocal        -- [LetterDict {letter = 'c', dictlist = []}]
         res = case letterList of
-            Just letterList -> new : letterList
-            Nothing -> LetterDict letter [new] : leveldlLocal
+            Just letterList -> newlist ++ letterList  -- [LetterDict {letter = 'b', dictlist = []}, LetterDict {letter = 'c', dictlist = []}]
+            Nothing -> newlist ++ leveldlLocal
     in
-        [new]
+        [LetterDict ll res]
 
 
 
 
 
 buildTrie :: [String] -> [LetterDict]
-buildTrie words =
-    let args = [Just (LevelArg w [] 0) | w <- words]
-    in head (map drillDict args)
+buildTrie =
+    foldr (\w dict -> drillDict (Just (LevelArg w dict 0)) ++ dict) []
 
 
 
-testlist = ["hello", "hey", "what", "when", "why"]
-
+-- testlist = ["hello", "hey", "what", "when", "why"]
+testlist = ["when", "why"]
 
 
 testtrie = [
@@ -72,8 +73,7 @@ testtrie = [
         ]
     ]
 
-main = do
-    let trie = buildTrie testlist
-    --print trie
-    print (drillDict (Just (LevelArg "apple" [] 0)))
-    --print (findKey 'b' testtrie)
+main =
+    print (buildTrie testlist)
+    --print (drillDict (Just (LevelArg "ac" [] 0)))
+    --print (drillDict (Just (LevelArg "ab" (drillDict (Just (LevelArg "ac" [] 0))) 0)))
