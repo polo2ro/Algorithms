@@ -18,25 +18,29 @@
 -- [(5,0), (7,0), (5,2), (6,1), (4,4), (7,1)]
 
 
+import Data.List
 
--- Filter list, get the n first found persons with height >= h
--- The number of persons in the returned list will be filtered using the 2nd parameter function
-filterHeight :: Int -> (Int -> Bool) -> [(Int, Int)] -> [(Int, Int)]
-filterHeight _ _ [] = []
-filterHeight h p (x:xs)
-    | p (length [person | person <- xs, fst person <= h]) = x : filterHeight h p xs
-    | otherwise = filterHeight h p xs
+
+insertAt :: Int -> (Int, Int) -> [(Int, Int)] -> [(Int, Int)]
+insertAt z y xs = as ++ (y:bs)
+    where (as,bs) = splitAt z xs
+
+
+buildNew :: [(Int, Int)] -> [(Int, Int)] -> [(Int, Int)]
+buildNew [] _         = []
+buildNew (x:xs) queue = insertAt (snd x) x (buildNew xs queue)
+
+sortPerson :: (Int, Int) -> (Int, Int) -> Ordering
+sortPerson (h1, k1) (h2, k2)
+    | -1*h1 < -1*h2 = GT
+    | -1*h1 > -1*h2 = LT
+    | -1*h1 == -1*h2 = compare k1 k2
 
 
 reconstruct :: [(Int, Int)] -> [(Int, Int)]
-reconstruct [] = []
-reconstruct (x:xs) =
-        let
-        h = fst x
-        k = snd x
-        before = reconstruct (filterHeight h (<=k) xs)
-        after  = reconstruct (filterHeight h (>k) xs)
-    in  before ++ [x] ++ after
+reconstruct xs =
+    buildNew sorted []
+    where sorted = sortBy sortPerson xs
 
 
 
