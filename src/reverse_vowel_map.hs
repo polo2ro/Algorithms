@@ -25,7 +25,7 @@ findFirstVowel m  = lookupVowel m 0 (+) (quot (Map.size m) 2)
 -- Find last vowel in map
 findLastVowel :: Map.Map k Char -> Maybe (k, Char)
 findLastVowel m  = lookupVowel m start (-) (quot start 2)
-                where start = Map.size m
+                where start = Map.size m - 1
 
 -- Split map at at a key, if no key return map twice
 splitIfPossible :: Map.Map Int Char -> Maybe (Int, Char) -> (Map.Map Int Char, Map.Map Int Char)
@@ -33,10 +33,16 @@ splitIfPossible m Nothing        = (m, m)
 splitIfPossible m (Just (k, _))  = Map.split k m
 
 
-crawlMap :: Map.Map Int Char -> Map.Map Int Change -> Map.Map Int Change
+createChange :: Maybe (Int, Char) -> Maybe (Int, Char) -> Change
+createChange left right
+    | isNothing left || isNothing right = Change 0 0
+    | otherwise = Change (fst $ fromJust left) (fst $ fromJust right)
+
+
+crawlMap :: Map.Map Int Char -> [Change] -> [Change]
 crawlMap m changes
     | isNothing left || isNothing right = changes
-    | otherwise                         = crawlMap smallR changes
+    | otherwise                         = crawlMap smallR (createChange left right: changes)
     where
         left = findFirstVowel m
         right = findLastVowel m
@@ -49,7 +55,7 @@ reverseVowel :: String -> String
 reverseVowel xs = show changes
     where
         mxs        = Map.fromList $ zip [0..] xs
-        changes    = crawlMap mxs Map.empty
+        changes    = crawlMap mxs []
 
 
 
