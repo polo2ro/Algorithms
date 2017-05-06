@@ -20,34 +20,30 @@ lookupVowel m p direction limit
 
 -- Find fist vowel in map
 findFirstVowel :: Map.Map k Char -> Maybe (k, Char)
-findFirstVowel m  = lookupVowel m 0 (+) (quot (Map.size m) 2)
+findFirstVowel m = lookupVowel m 0 (+) (Map.size m - 1)
 
 -- Find last vowel in map
 findLastVowel :: Map.Map k Char -> Maybe (k, Char)
-findLastVowel m  = lookupVowel m start (-) (quot start 2)
+findLastVowel m = lookupVowel m start (-) start
                 where start = Map.size m - 1
 
--- Split map at at a key, if no key return map twice
-splitIfPossible :: Map.Map Int Char -> Maybe (Int, Char) -> (Map.Map Int Char, Map.Map Int Char)
-splitIfPossible m Nothing        = (m, m)
-splitIfPossible m (Just (k, _))  = Map.split k m
 
+shortenMap :: Map.Map Int Char -> Int -> Int -> Map.Map Int Char
+shortenMap m leftKey rightKey = fst $ Map.split rightKey smallL
+    where (_, smallL) = Map.split leftKey m
 
-createChange :: Maybe (Int, Char) -> Maybe (Int, Char) -> Change
-createChange left right
-    | isNothing left || isNothing right = Change 0 0
-    | otherwise = Change (fst $ fromJust left) (fst $ fromJust right)
-
-
+-- Create list of changes
 crawlMap :: Map.Map Int Char -> [Change] -> [Change]
 crawlMap m changes
-    | isNothing left || isNothing right = changes
-    | otherwise                         = crawlMap smallR (createChange left right: changes)
+    | Map.size m == 0                               = changes
+    | isNothing left || isNothing right             = changes
+    | fst (fromJust left) >= fst (fromJust right)   = changes
+    | otherwise                                     =
+        crawlMap (shortenMap m (fst $ fromJust left) (fst $ fromJust right))
+            (Change (fst $ fromJust left) (fst $ fromJust right): changes)
     where
         left = findFirstVowel m
         right = findLastVowel m
-        (_, smallL) = splitIfPossible m left
-        (smallR, _) = splitIfPossible smallL right
 
 
 
