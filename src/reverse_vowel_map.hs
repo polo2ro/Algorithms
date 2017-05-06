@@ -45,13 +45,21 @@ crawlMap m changes
         left = findFirstVowel m
         right = findLastVowel m
 
+-- Flip to letters in mapped string
+applyChange :: Change -> Map.Map Int Char -> Map.Map Int Char
+applyChange (Change leftKey rightKey) m = Map.insert rightKey leftValue (Map.insert leftKey rightValue m)
+    where
+        leftValue = m Map.! leftKey
+        rightValue = m Map.! rightKey
+
 
 
 reverseVowel :: String -> String
-reverseVowel xs = show changes
+reverseVowel xs = Map.elems reversed
     where
-        mxs        = Map.fromList $ zip [0..] xs
-        changes    = crawlMap mxs []
+        mappedString = Map.fromList $ zip [0..] xs
+        changes      = crawlMap mappedString []
+        reversed     = foldr applyChange mappedString changes
 
 
 
