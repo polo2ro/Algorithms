@@ -24,26 +24,33 @@ findFirstVowel m = lookupVowel m 0 (+) (Map.size m - 1)
 
 -- Find last vowel in map
 findLastVowel :: Map.Map k Char -> Maybe (k, Char)
-findLastVowel m = lookupVowel m start (-) start
-                where start = Map.size m - 1
+findLastVowel m = lookupVowel m (Map.size m - 1) (-) 0
 
 
 shortenMap :: Map.Map Int Char -> Int -> Int -> Map.Map Int Char
 shortenMap m leftKey rightKey = fst $ Map.split rightKey smallL
     where (_, smallL) = Map.split leftKey m
 
+justFst :: Maybe (Int, Char) -> Int
+justFst (Just mapElem) =  fst mapElem
+justFst Nothing = 0
+
+
 -- Create list of changes
 crawlMap :: Map.Map Int Char -> [Change] -> [Change]
 crawlMap m changes
-    | Map.size m == 0                               = changes
-    | isNothing left || isNothing right             = changes
-    | fst (fromJust left) >= fst (fromJust right)   = changes
-    | otherwise                                     =
-        crawlMap (shortenMap m (fst $ fromJust left) (fst $ fromJust right))
-            (Change (fst $ fromJust left) (fst $ fromJust right): changes)
+    | Map.size m == 0                   = changes
+    | isNothing left || isNothing right = changes
+    | leftKey >= rightKey               = changes
+    | otherwise                         =
+        crawlMap (shortenMap m leftKey rightKey) (Change leftKey rightKey: changes)
     where
         left = findFirstVowel m
         right = findLastVowel m
+        leftKey = justFst left
+        rightKey = justFst right
+
+
 
 -- Flip to letters in mapped string
 applyChange :: Change -> Map.Map Int Char -> Map.Map Int Char
