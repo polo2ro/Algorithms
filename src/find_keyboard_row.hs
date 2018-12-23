@@ -12,8 +12,12 @@ checkRow word row = search == search `intersect` row
     where search = map toLower word
 
 isInOneKeyboardRow :: String -> Bool
-isInOneKeyboardRow word = isJust (find (checkRow word) keyboard)
-    where keyboard = ["qwertyuiop", "asdfghjkl", "zxcvbnm"]
+isInOneKeyboardRow word = isJust $ find (checkRow word)
+    [
+        "qwertyuiop",
+        "asdfghjkl",
+        "zxcvbnm"
+    ]
 
 main :: IO()
 main = print (filter isInOneKeyboardRow ["Hello", "Alaska", "Dad", "Peace"])
